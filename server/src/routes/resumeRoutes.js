@@ -8,10 +8,6 @@ const router = express.Router();
 
 const upload = multer({ dest: "uploads/" });
 
-router.get("/", (req, res) => {
-  res.json({ message: "Resume route working" });
-});
-
 router.post("/upload", upload.single("resume"), async (req, res) => {
   try {
     const filePath = req.file.path;
@@ -37,6 +33,24 @@ router.post("/upload", upload.single("resume"), async (req, res) => {
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: "Failed to upload and save resume" });
+  }
+});
+
+router.get("/", async (req, res) => {
+  try {
+    const resumes = await prisma.resume.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.json({
+      message: "Resumes fetched successfully",
+      resumes,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Failed to fetch resumes" });
   }
 });
 
