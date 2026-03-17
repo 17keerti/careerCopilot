@@ -67,4 +67,24 @@ Return:
 
 });
 
+router.get("/", async (req, res) => {
+  try {
+    const analyses = await prisma.analysis.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    res.json({
+      message: "Analyses fetched successfully",
+      analyses,
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to fetch analyses",
+    });
+  }
+});
+
 module.exports = router;
