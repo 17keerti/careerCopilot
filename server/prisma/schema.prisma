@@ -28,3 +28,11 @@ model Resume {
 
   user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
+
+model JobDescription {
+  id          String   @id @default(uuid())
+  companyName String
+  roleTitle   String
+  description String
+  createdAt   DateTime @default(now())
+}
