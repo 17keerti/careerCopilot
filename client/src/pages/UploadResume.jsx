@@ -1,46 +1,52 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import axios from "axios";
 
 function UploadResume() {
+
   const [file, setFile] = useState(null);
-  const [result, setResult] = useState(null);
+  const [resumes, setResumes] = useState([]);
   const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+
+  const fetchResumes = async () => {
+    try {
+      const response = await axios.get(
+        "http://127.0.0.1:8000/api/resumes"
+      );
+      setResumes(response.data.resumes || []);
+    } catch (err) {
+      console.error(err);
+      setError("Failed to fetch resumes");
+    }
+  };
+
+  useEffect(() => {
+    fetchResumes();
+  }, []);
 
   const handleUpload = async () => {
 
     if (!file) {
-      setError("Please select a file first");
+      setError("Please select a file");
       return;
     }
 
+    const formData = new FormData();
+    formData.append("resume", file);
+
     try {
-      setLoading(true);
-      setError("");
-      setResult(null);
 
-      const formData = new FormData();
-      formData.append("resume", file);
-
-      const response = await axios.post(
+      await axios.post(
         "http://127.0.0.1:8000/api/resumes/upload",
         formData
       );
 
-      setResult(response.data);
+      fetchResumes();
 
     } catch (err) {
 
-      console.error("Upload error:", err);
+      console.error(err);
+      setError("Upload failed");
 
-      setError(
-        err.response?.data?.error ||
-        err.message ||
-        "Upload failed"
-      );
-
-    } finally {
-      setLoading(false);
     }
   };
 
@@ -55,17 +61,19 @@ function UploadResume() {
         onChange={(e) => setFile(e.target.files[0])}
       />
 
-      <button onClick={handleUpload} disabled={loading}>
-        {loading ? "Uploading..." : "Upload"}
+      <button onClick={handleUpload}>
+        Upload
       </button>
 
-      {error && <p style={{color:"red"}}>{error}</p>}
+      {error && <p>{error}</p>}
 
-      {result && (
-        <pre>
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      )}
+      <h3>Saved Resumes</h3>
+
+      {resumes.map((resume) => (
+        <div key={resume.id}>
+          {resume.fileName}
+        </div>
+      ))}
 
     </div>
   );
