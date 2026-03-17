@@ -1,7 +1,9 @@
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const resumeRoutes = require("./routes/resumeRoutes");
 const jobRoutes = require("./routes/jobRoutes");
+const analyzeRoutes = require("./routes/analyzeRoutes");
 
 const app = express();
 
@@ -14,5 +16,6 @@ app.get("/", (req, res) => {
 
 app.use("/api/resumes", resumeRoutes);
 app.use("/api/jobs", jobRoutes);
+app.use("/api/analyze", analyzeRoutes);
 
 module.exports = app;
