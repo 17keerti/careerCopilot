@@ -36,3 +36,11 @@ model JobDescription {
   description String
   createdAt   DateTime @default(now())
 }
+
+model Analysis {
+  id             String   @id @default(uuid())
+  resumeText     String
+  jobDescription String
+  result         String
+  createdAt      DateTime @default(now())
+}

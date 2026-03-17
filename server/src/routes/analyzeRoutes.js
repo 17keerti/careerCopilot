@@ -1,5 +1,6 @@
 const express = require("express");
 const OpenAI = require("openai");
+const prisma = require("../utils/prisma");
 
 const router = express.Router();
 
@@ -39,8 +40,19 @@ Return:
       ]
     });
 
+    const aiResult = completion.choices[0].message.content;
+
+    const savedAnalysis = await prisma.analysis.create({
+      data: {
+        resumeText,
+        jobDescription,
+        result: aiResult
+      }
+    });
+
     res.json({
-      result: completion.choices[0].message.content
+      message: "Analysis completed and saved",
+      analysis: savedAnalysis
     });
 
     } catch (error) {
