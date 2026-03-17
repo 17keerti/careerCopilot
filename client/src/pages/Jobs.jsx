@@ -56,10 +56,9 @@ function Jobs() {
   };
 
   return (
+    <div className="section-card">
 
-    <div>
-
-      <h2>Add Job Description</h2>
+      <h2 className="section-title">Add Job Description</h2>
 
       <input
         placeholder="Company Name"
@@ -67,15 +66,11 @@ function Jobs() {
         onChange={(e) => setCompanyName(e.target.value)}
       />
 
-      <br />
-
       <input
         placeholder="Role Title"
         value={roleTitle}
         onChange={(e) => setRoleTitle(e.target.value)}
       />
-
-      <br />
 
       <textarea
         placeholder="Job Description"
@@ -83,28 +78,24 @@ function Jobs() {
         onChange={(e) => setDescription(e.target.value)}
       />
 
-      <br />
-
       <button onClick={handleSubmit}>
         Save Job
       </button>
 
-      <h3>Saved Jobs</h3>
+      <h3 style={{ marginTop: "20px" }}>Saved Jobs</h3>
 
-      {jobs.map((job) => (
-
-        <div key={job.id}>
-
-          <strong>{job.companyName}</strong>
-
-          <p>{job.roleTitle}</p>
-
-        </div>
-
-      ))}
+      {jobs.length === 0 ? (
+        <p>No jobs found</p>
+      ) : (
+        jobs.map((job) => (
+          <div key={job.id} className="list-item">
+            <strong>{job.companyName}</strong>
+            <div>{job.roleTitle}</div>
+          </div>
+        ))
+      )}
 
     </div>
-
   );
 }
 

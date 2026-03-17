@@ -35,41 +35,52 @@ function Analyze() {
     setResult(response.data.result);
   };
 
-  return (
-    <div>
-      <h2>Analyze Resume vs Job</h2>
+    return (
+    <div className="section-card">
 
-      <select onChange={(e) => setSelectedResume(e.target.value)} value={selectedResume}>
+        <h2 className="section-title">Analyze Resume vs Job</h2>
+
+        <label>Select Resume</label>
+        <select
+        value={selectedResume}
+        onChange={(e) => setSelectedResume(e.target.value)}
+        >
         <option value="">Select Resume</option>
         {resumes.map((resume) => (
-          <option key={resume.id} value={resume.id}>
+            <option key={resume.id} value={resume.id}>
             {resume.fileName}
-          </option>
+            </option>
         ))}
-      </select>
+        </select>
 
-      <br />
-
-      <select onChange={(e) => setSelectedJob(e.target.value)} value={selectedJob}>
+        <label>Select Job</label>
+        <select
+        value={selectedJob}
+        onChange={(e) => setSelectedJob(e.target.value)}
+        >
         <option value="">Select Job</option>
         {jobs.map((job) => (
-          <option key={job.id} value={job.id}>
+            <option key={job.id} value={job.id}>
             {job.companyName} - {job.roleTitle}
-          </option>
+            </option>
         ))}
-      </select>
+        </select>
 
-      <br />
+        <button onClick={handleAnalyze}>
+        Analyze Match
+        </button>
 
-      <button onClick={handleAnalyze}>
-        Analyze
-      </button>
+        {result && (
+        <div style={{ marginTop: "20px" }}>
+            <h3>Analysis Result</h3>
+            <div className="result-box">
+            {result}
+            </div>
+        </div>
+        )}
 
-      {result && (
-        <pre>{result}</pre>
-      )}
     </div>
-  );
+    );
 }
 
 export default Analyze;
