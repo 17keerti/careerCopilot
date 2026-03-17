@@ -8,6 +8,7 @@ function Analyze() {
 
   const [selectedResume, setSelectedResume] = useState("");
   const [selectedJob, setSelectedJob] = useState("");
+  const [selectedAnalysis, setSelectedAnalysis] = useState(null);
 
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
@@ -56,6 +57,7 @@ function Analyze() {
       setLoading(true);
       setError("");
       setResult("");
+      setSelectedAnalysis(null);
 
       const resume = resumes.find((item) => item.id === selectedResume);
       const job = jobs.find((item) => item.id === selectedJob);
@@ -65,7 +67,9 @@ function Analyze() {
         jobDescription: job.description,
       });
 
-      setResult(response.data.analysis.result);
+      const analysisResult = response.data.analysis.result;
+
+      setResult(analysisResult);
       fetchAnalyses();
     } catch (err) {
       console.error("Analysis failed:", err);
@@ -124,15 +128,28 @@ function Analyze() {
         <p>No past analyses</p>
       ) : (
         analyses.map((item) => (
-          <div key={item.id} className="list-item">
+          <div
+            key={item.id}
+            className="list-item"
+            style={{ cursor: "pointer" }}
+            onClick={() => setSelectedAnalysis(item)}
+          >
             <div style={{ fontSize: "12px", color: "#6b7280" }}>
               {new Date(item.createdAt).toLocaleString()}
             </div>
+
             <div style={{ marginTop: "6px", whiteSpace: "pre-wrap" }}>
-              {item.result.slice(0, 200)}...
+              {item.result.slice(0, 150)}...
             </div>
           </div>
         ))
+      )}
+
+      {selectedAnalysis && (
+        <div style={{ marginTop: "20px" }}>
+          <h3>Selected Analysis</h3>
+          <div className="result-box">{selectedAnalysis.result}</div>
+        </div>
       )}
     </div>
   );
