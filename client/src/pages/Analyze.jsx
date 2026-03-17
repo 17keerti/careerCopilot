@@ -10,7 +10,7 @@ function Analyze() {
   const [selectedJob, setSelectedJob] = useState("");
   const [selectedAnalysis, setSelectedAnalysis] = useState(null);
 
-  const [result, setResult] = useState("");
+  const [result, setResult] = useState(null);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
 
@@ -56,26 +56,38 @@ function Analyze() {
     try {
       setLoading(true);
       setError("");
-      setResult("");
+      setResult(null);
       setSelectedAnalysis(null);
 
-      const resume = resumes.find((item) => item.id === selectedResume);
-      const job = jobs.find((item) => item.id === selectedJob);
+      const resume = resumes.find((r) => r.id === selectedResume);
+      const job = jobs.find((j) => j.id === selectedJob);
 
       const response = await axios.post("http://127.0.0.1:8000/api/analyze", {
         resumeText: resume.extractedText,
         jobDescription: job.description,
       });
 
-      const analysisResult = response.data.analysis.result;
-
-      setResult(analysisResult);
+      setResult(response.data.parsedResult);
       fetchAnalyses();
     } catch (err) {
       console.error("Analysis failed:", err);
       setError(err.response?.data?.error || "Analysis failed");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleDeleteAnalysis = async (id) => {
+    try {
+      await axios.delete(`http://127.0.0.1:8000/api/analyze/${id}`);
+
+      if (selectedAnalysis && selectedAnalysis.id === id) {
+        setSelectedAnalysis(null);
+      }
+
+      fetchAnalyses();
+    } catch (err) {
+      console.error("Failed to delete analysis:", err);
     }
   };
 
@@ -118,7 +130,33 @@ function Analyze() {
       {result && (
         <div style={{ marginTop: "20px" }}>
           <h3>Analysis Result</h3>
-          <div className="result-box">{result}</div>
+
+          <div className="list-item">
+            <strong>Match Score:</strong> {result.matchScore} / 100
+          </div>
+
+          <div className="list-item">
+            <strong>Summary:</strong>
+            <p>{result.summary}</p>
+          </div>
+
+          <div className="list-item">
+            <strong>Missing Skills:</strong>
+            <ul>
+              {result.missingSkills.map((skill, index) => (
+                <li key={index}>{skill}</li>
+              ))}
+            </ul>
+          </div>
+
+          <div className="list-item">
+            <strong>Suggestions:</strong>
+            <ul>
+              {result.suggestions.map((suggestion, index) => (
+                <li key={index}>{suggestion}</li>
+              ))}
+            </ul>
+          </div>
         </div>
       )}
 
@@ -127,28 +165,73 @@ function Analyze() {
       {analyses.length === 0 ? (
         <p>No past analyses</p>
       ) : (
-        analyses.map((item) => (
-          <div
-            key={item.id}
-            className="list-item"
-            style={{ cursor: "pointer" }}
-            onClick={() => setSelectedAnalysis(item)}
-          >
-            <div style={{ fontSize: "12px", color: "#6b7280" }}>
-              {new Date(item.createdAt).toLocaleString()}
-            </div>
+        analyses.map((item) => {
+          let parsed;
+          try {
+            parsed = JSON.parse(item.result);
+          } catch {
+            parsed = null;
+          }
 
-            <div style={{ marginTop: "6px", whiteSpace: "pre-wrap" }}>
-              {item.result.slice(0, 150)}...
+          return (
+            <div key={item.id} className="list-item">
+              <div
+                style={{ cursor: "pointer" }}
+                onClick={() => setSelectedAnalysis(item)}
+              >
+                <div style={{ fontSize: "12px", color: "#6b7280" }}>
+                  {new Date(item.createdAt).toLocaleString()}
+                </div>
+
+                <div style={{ marginTop: "6px" }}>
+                  {parsed ? parsed.summary : "Invalid data"}
+                </div>
+              </div>
+
+              <button
+                style={{
+                  marginTop: "10px",
+                  background: "#dc2626",
+                }}
+                onClick={() => handleDeleteAnalysis(item.id)}
+              >
+                Delete
+              </button>
             </div>
-          </div>
-        ))
+          );
+        })
       )}
 
       {selectedAnalysis && (
         <div style={{ marginTop: "20px" }}>
           <h3>Selected Analysis</h3>
-          <div className="result-box">{selectedAnalysis.result}</div>
+
+          {(() => {
+            let parsed;
+            try {
+              parsed = JSON.parse(selectedAnalysis.result);
+            } catch {
+              return <div className="result-box">Invalid data</div>;
+            }
+
+            return (
+              <div className="result-box">
+                Match Score: {parsed.matchScore}
+                {"\n\n"}
+                Summary:
+                {"\n"}
+                {parsed.summary}
+                {"\n\n"}
+                Missing Skills:
+                {"\n"}
+                {parsed.missingSkills.join(", ")}
+                {"\n\n"}
+                Suggestions:
+                {"\n"}
+                {parsed.suggestions.join(", ")}
+              </div>
+            );
+          })()}
         </div>
       )}
     </div>

@@ -102,4 +102,25 @@ router.get("/", async (req, res) => {
   }
 });
 
+router.delete("/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.analysis.delete({
+      where: {
+        id,
+      },
+    });
+
+    res.json({
+      message: "Analysis deleted successfully",
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      error: "Failed to delete analysis",
+    });
+  }
+});
+
 module.exports = router;
